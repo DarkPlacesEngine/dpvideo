@@ -1,6 +1,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "dpvdecode.h"
 #include "SDL.h"
 #include "SDL_main.h"
@@ -502,7 +503,7 @@ static void dpvplayer(char *filename, void *stream, int fullscreen, int opengl, 
 	desiredaudiospec = malloc(sizeof(SDL_AudioSpec));
 	memset(desiredaudiospec, 0, sizeof(SDL_AudioSpec));
 
-	desiredaudiospec->freq = soundfrequency;
+	desiredaudiospec->freq = soundfrequency ? soundfrequency : 11025;
 	desiredaudiospec->format = AUDIO_S16SYS;
 	desiredaudiospec->channels = 2;
 	desiredaudiospec->samples = 1024;//16384;//1024;//16384;//2048;
