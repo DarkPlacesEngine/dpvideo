@@ -15,7 +15,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "dpvencoder"=..\dpvencoder.dsp - Package Owner=<4>
+Project: "dpvencoder"=.\dpvencoder.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
