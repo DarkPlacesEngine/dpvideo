@@ -307,6 +307,7 @@ void *dpvdecode_open(char *filename, char **errorstring)
 	s = malloc(sizeof(dpvdecodestream_t));
 	if (s != NULL)
 	{
+		memset(s, 0, sizeof(dpvdecodestream_t));
 		s->bitstream = hz_bitstream_read_open(filename);
 		if (s->bitstream != NULL)
 		{
