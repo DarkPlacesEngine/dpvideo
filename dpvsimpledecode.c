@@ -458,7 +458,12 @@ int dpvsimpledecode_video(void *stream, void *imagedata, unsigned int Rmask, uns
 	hz_bitstream_read_blocks_read(s->framedatablocks, s->bitstream, 8);
 	hz_bitstream_read_bytes(s->framedatablocks, t, 4);
 	if (memcmp(t, "VID0", 4))
-		return (s->error = DPVSIMPLEDECODEERROR_READERROR);
+	{
+		if (t[0] == 0)
+			return (s->error = DPVSIMPLEDECODEERROR_EOF);
+		else
+			return (s->error = DPVSIMPLEDECODEERROR_READERROR);
+	}
 	framedatasize = hz_bitstream_read_int(s->framedatablocks);
 	hz_bitstream_read_blocks_read(s->framedatablocks, s->bitstream, framedatasize);
 	if (dpvsimpledecode_decompressimage(s))
