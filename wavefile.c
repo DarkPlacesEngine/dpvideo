@@ -130,8 +130,8 @@ void waveclose(wavefile_t *f)
 
 unsigned int waveread16stereo(wavefile_t *w, short *soundbuffer, unsigned int samples)
 {
-	int i;
-	int length;
+	unsigned int i;
+	unsigned int length;
 	unsigned char *in;
 	short *out;
 	length = samples;

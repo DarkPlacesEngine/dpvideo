@@ -1,25 +1,26 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "dpvsimpledecode.h"
-#include "SDL/SDL.h"
-#include "SDL/SDL_main.h"
+#include "SDL.h"
+#include "SDL_main.h"
 
 #define MAXSOUNDBUFFER 32768
 typedef struct audiocallbackinfo_s
 {
 	// the size of this matchs bufferlength
 	short buffer[MAXSOUNDBUFFER * 2];
-	int bufferstart;
-	int buffercount;
-	int bufferlength;
-	int bufferpreferred;
+	unsigned int bufferstart;
+	unsigned int buffercount;
+	unsigned int bufferlength;
+	unsigned int bufferpreferred;
 }
 audiocallbackinfo_t;
 
 void audiodequeue(audiocallbackinfo_t *info, short *samples, unsigned int length)
 {
-	int b1, b2, l;
+	unsigned int b1, b2, l;
 	l = length;
 	if (l > info->buffercount)
 		l = info->buffercount;
@@ -110,7 +111,7 @@ static void dpvplayer(char *filename, void *stream, int fullscreen)
 	height = dpvsimpledecode_getheight(stream);
 
 	/* Initialize defaults, Video and Audio */
-	if ((SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_NOPARACHUTE) == -1))
+	if ((SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) == -1))
 	{
 		fprintf(stderr, "Could not initialize SDL: %s.\n", SDL_GetError());
 		SDL_Quit();
@@ -243,7 +244,7 @@ static void dpvplayer(char *filename, void *stream, int fullscreen)
 		if (timedifference < 0)
 			timedifference = 0;
 
-		newframenum = streamtime * framerate;
+		newframenum = (int) (streamtime * framerate);
 		if (newframenum < 0)
 			newframenum = 0;
 		if (currentframenum < newframenum)

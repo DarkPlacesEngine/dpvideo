@@ -203,8 +203,8 @@ static void dpvencode_compressimage(dpvencodestream_t *s, unsigned char *pixels,
 	width = s->width;
 	height = s->height;
 	error = ((256.0 / 100.0) / quality);
-	threshold = error * error;
-	deltablockthreshold = BLOCKSIZE * BLOCKSIZE * threshold / 8.0;
+	threshold = (int) (error * error);
+	deltablockthreshold = (int) (BLOCKSIZE * BLOCKSIZE * threshold / 8.0);
 	error = 0;
 	errorbiggest = 0;
 	deltablocks = 0;
@@ -540,7 +540,7 @@ static int dpvencode_beginstream(dpvencodestream_t *s, unsigned int width, unsig
 	// video info goes here
 	hz_bitstream_write_short(s->headerblocks, s->width);
 	hz_bitstream_write_short(s->headerblocks, s->height);
-	hz_bitstream_write_int(s->headerblocks, s->framerate * 65536.0);
+	hz_bitstream_write_int(s->headerblocks, (unsigned int) (s->framerate * 65536.0));
 	// sound info goes here
 	// samplespersecond (no sound here, so zero)
 	hz_bitstream_write_int(s->headerblocks, 0);

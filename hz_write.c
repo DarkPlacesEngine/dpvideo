@@ -1,5 +1,6 @@
 
 #include <stdlib.h>
+#include <string.h>
 #include "hz_write.h"
 
 hz_bitstream_write_t *hz_bitstream_write_open(char *filename)
@@ -163,7 +164,7 @@ void hz_bitstream_write_int(hz_bitstream_writeblocks_t *blocks, unsigned int num
 
 void hz_bitstream_write_bytes(hz_bitstream_writeblocks_t *blocks, void *data, unsigned int size)
 {
-	int i;
+	unsigned int i;
 	unsigned char *b;
 	b = data;
 	for (i = 0;i < size;i++)
@@ -260,7 +261,7 @@ void hz_huffman_write_clearcounts(hzhuffmanwritetree_t *h)
 
 void hz_huffman_write_countsymbol(hzhuffmanwritetree_t *h, unsigned int num)
 {
-	if (num >= h->maxsymbols)
+	if (num >= (unsigned int) h->maxsymbols)
 		// error!
 		return;
 	h->nodes[num].count++;
@@ -268,7 +269,7 @@ void hz_huffman_write_countsymbol(hzhuffmanwritetree_t *h, unsigned int num)
 
 void hz_huffman_write_uncountsymbol(hzhuffmanwritetree_t *h, unsigned int num)
 {
-	if (num >= h->maxsymbols)
+	if (num >= (unsigned int) h->maxsymbols)
 		// error!
 		return;
 	h->nodes[num].count--;
@@ -356,7 +357,8 @@ static int hz_huffman_write_buildtreefromlengths(hzhuffmanwritetree_t *h)
 
 void hz_huffman_write_buildtree(hzhuffmanwritetree_t *h)
 {
-	int nodecount, toolong, bestcount, highestlength;
+	int nodecount;
+	unsigned int toolong, bestcount, highestlength;
 	hzhuffmanwritenode_t *node, *freenode, *endnode, *endofsymbols, *list, *p, *l;
 
 	// to allow iterating through the node array without a counter
@@ -532,7 +534,7 @@ void hz_huffman_write_buildtree(hzhuffmanwritetree_t *h)
 
 void hz_huffman_write_writetree(hz_bitstream_writeblocks_t *blocks, hzhuffmanwritetree_t *h)
 {
-	int i, l, bits;
+	unsigned int i, l, bits;
 
 	bits = 0;
 	if (h->maxsymbols > 1)

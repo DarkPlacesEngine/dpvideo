@@ -86,7 +86,7 @@ static void dpvdecode_addframetoseektable(dpvdecodestream_t *s, FILE *file, int 
 	seektable->entry[seektable->entries++].position = position;
 }
 
-static dpvdecodeseek_t *dpvdecode_findseekentry(dpvdecodestream_t *s, int framenum)
+static dpvdecodeseek_t *dpvdecode_findseekentry(dpvdecodestream_t *s, unsigned int framenum)
 {
 	dpvdecodeseektable_t *seektable;
 
@@ -461,7 +461,7 @@ int dpvdecode_error(void *stream, char **errorstring)
 int dpvdecode_framefortime(void *stream, double t)
 {
 	dpvdecodestream_t *s = stream;
-	return t * s->info_framerate;
+	return (int) (t * s->info_framerate);
 }
 
 // return the total number of frames in the stream
@@ -645,7 +645,7 @@ int dpvdecode_video(void *stream, int framenum, void *imagedata, unsigned int Rm
 	s->error = DPVDECODEERROR_NONE;
 	if (dpvdecode_setpixelformat(s, Rmask, Gmask, Bmask, bytesperpixel))
 		return s->error;
-	if (framenum < 0 || framenum >= s->info_frames)
+	if (framenum < 0 || framenum >= (signed int) s->info_frames)
 	{
 		s->videoframenum = -10000;
 		memset(s->videopixels, 0, s->info_imagewidth * s->info_imageheight * sizeof(*s->videopixels));

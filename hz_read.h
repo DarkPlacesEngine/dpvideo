@@ -34,8 +34,8 @@ typedef struct
 
 	unsigned int store;
 	unsigned int ungetbitstore;
-	int count;
-	int ungetbitcount;
+	unsigned int count;
+	unsigned int ungetbitcount;
 }
 hz_bitstream_readblocks_t;
 

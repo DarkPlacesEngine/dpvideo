@@ -1,6 +1,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "file.h"
 #include "tgafile.h"
 
@@ -226,7 +227,7 @@ void freetga(tgafile_t *f)
 
 int savetga_rgb24_topdown(char *filename, unsigned char *pixels, unsigned int width, unsigned int height)
 {
-	int x, y;
+	unsigned int x, y;
 	unsigned char *buffer, *buf;
 	unsigned char *row;
 	buffer = malloc(width * height * 3 + 18);
@@ -259,7 +260,7 @@ int savetga_rgb24_topdown(char *filename, unsigned char *pixels, unsigned int wi
 
 int savetga_rgb32_topdown(char *filename, unsigned int *pixels, unsigned int width, unsigned int height)
 {
-	int x, y;
+	unsigned int x, y;
 	unsigned char *buffer, *buf;
 	unsigned int *row;
 	buffer = malloc(width * height * 3 + 18);

@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "dpvdecode.h"
-#include "SDL/SDL.h"
-#include "SDL/SDL_main.h"
+#include "SDL.h"
+#include "SDL_main.h"
 
 #if WIN32
 #include <windows.h>
@@ -135,16 +135,16 @@ typedef struct audiocallbackinfo_s
 {
 	// the size of this matchs bufferlength
 	short buffer[MAXSOUNDBUFFER * 2];
-	int bufferstart;
-	int buffercount;
-	int bufferlength;
-	int bufferpreferred;
+	unsigned int bufferstart;
+	unsigned int buffercount;
+	unsigned int bufferlength;
+	unsigned int bufferpreferred;
 }
 audiocallbackinfo_t;
 
 void audiodequeue(audiocallbackinfo_t *info, short *samples, unsigned int length)
 {
-	int b1, b2, l;
+	unsigned int b1, b2, l;
 	l = length;
 	if (l > info->buffercount)
 		l = info->buffercount;
@@ -342,7 +342,7 @@ static void dpvplayer(char *filename, void *stream, int fullscreen, int opengl, 
 	printf("Initializing SDL.\n");
 
 	/* Initialize defaults, Video and Audio */
-	if ((SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_NOPARACHUTE) == -1))
+	if ((SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) == -1))
 	{
 		printf("Could not initialize SDL: %s.\n", SDL_GetError());
 		SDL_Quit();
@@ -467,7 +467,7 @@ static void dpvplayer(char *filename, void *stream, int fullscreen, int opengl, 
 			exit(1);
 		}
 
-		if (surface->w < dpvdecode_getwidth(stream) || surface->h < dpvdecode_getheight(stream))
+		if ((unsigned int) surface->w < dpvdecode_getwidth(stream) || (unsigned int) surface->h < dpvdecode_getheight(stream))
 		{
 			printf("Surface from SetVideoMode too small for video, exiting.\n");
 			SDL_Quit();
@@ -527,7 +527,6 @@ static void dpvplayer(char *filename, void *stream, int fullscreen, int opengl, 
 
 	audiocallbackinfo->bufferlength = MAXSOUNDBUFFER;
 	audiocallbackinfo->bufferpreferred = soundprefetchsamples;
-	audiocallbackinfo->bufferminimum = soundmixaheadsamples;
 
 	soundbufferlength = audiocallbackinfo->bufferlength;
 	soundbuffer = malloc(soundbufferlength * sizeof(short[2]));
@@ -686,7 +685,7 @@ static void dpvplayer(char *filename, void *stream, int fullscreen, int opengl, 
 		}
 		oldframenum = newframenum;
 		newframenum = dpvdecode_framefortime(stream, streamtime);
-		if (newframenum >= dpvdecode_gettotalframes(stream))
+		if (newframenum >= (signed int) dpvdecode_gettotalframes(stream))
 		{
 			newframenum = 0;
 			streamtime = 0;
@@ -744,7 +743,7 @@ static void dpvplayer(char *filename, void *stream, int fullscreen, int opengl, 
 		}
 		if (reset)
 		{
-			firstsample = (streamtime + soundlatency) * soundfrequency;
+			firstsample = (int) ((streamtime + soundlatency) * soundfrequency);
 			if (audiocallbackinfo->buffercount)
 			{
 				SDL_LockAudio();
@@ -765,14 +764,14 @@ static void dpvplayer(char *filename, void *stream, int fullscreen, int opengl, 
 					audioenqueue(audiocallbackinfo, soundbuffer, audiocallbackinfo->bufferlength - audiocallbackinfo->buffercount);
 					SDL_UnlockAudio();
 				}
-				if (audiopause && audiocallbackinfo->buffercount >= audiocallbackinfo->bufferminimum)
+				if (audiopause && audiocallbackinfo->buffercount >= audiocallbackinfo->bufferpreferred)
 					audiopause = 0;
 			}
 			else
 			{
 				audiopause = 1;
 				// reset the position too
-				firstsample = (streamtime + soundlatency) * soundfrequency;
+				firstsample = (int) ((streamtime + soundlatency) * soundfrequency);
 				audioqueueclear(audiocallbackinfo);
 			}
 			if (audiopause)
@@ -798,7 +797,6 @@ static void dpvplayer(char *filename, void *stream, int fullscreen, int opengl, 
 		//printf("bufferstart = %i\n", audiocallbackinfo->bufferstart);
 		//printf("buffercount = %i\n", audiocallbackinfo->buffercount);
 		//printf("bufferpreferred = %i\n", audiocallbackinfo->bufferpreferred);
-		//printf("bufferminimum = %i\n", audiocallbackinfo->bufferminimum);
 		//printf("audio state: %i\n", SDL_GetAudioStatus());
 	}
 	SDL_PauseAudio(1);

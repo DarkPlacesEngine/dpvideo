@@ -90,11 +90,11 @@ hzhuffmanwritenode_t;
 
 typedef struct hzhuffmanwritetree_s
 {
-	int maxsymbols;
-	int maxnodes;
+	unsigned int maxsymbols;
+	unsigned int maxnodes;
 
 	// internal use only
-	int mark;
+	unsigned int mark;
 
 	// nodes and symbols (the symbols are the first nodes)
 	hzhuffmanwritenode_t *nodes;
