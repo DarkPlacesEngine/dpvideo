@@ -3,6 +3,7 @@
 *.plg
 *.ncb
 *.opt
+*.exe
 dpvplayer
 dpvsimpleplayer
 dpvdecoder
