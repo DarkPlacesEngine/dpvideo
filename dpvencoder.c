@@ -324,7 +324,7 @@ int main(int argc, char **argv)
 		free(framename);
 		return 1;
 	}
-	printf("encoding %s at %f frames per second, %d by %d video", basename, framerate, tgafile->width, tgafile->height);
+	printf("encoding %s at %f frames per second, %d by %d video\n", basename, framerate, tgafile->width, tgafile->height);
 	/*
 	soundwarning = 1;
 	sprintf(framename, "%s.wav", basename);
