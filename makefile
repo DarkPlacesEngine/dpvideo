@@ -17,7 +17,7 @@ CFLAGS= -MD -Wall -Werror $(OPTIMIZATIONS) $(PROFILEOPTION)
 
 LDFLAGS= -lm $(PROFILEOPTION)
 
-TARGETS= dpvencoder dpvdecoder dpvplayer
+TARGETS= dpvencoder dpvdecoder dpvplayer dpvsimpleplayer
 
 all: $(TARGETS)
 
@@ -31,6 +31,9 @@ dpvdecoder: dpvdecoder.o dpvdecode.o file.o tgafile.o
 	gcc -o $@ $^ $(LDFLAGS)
 
 dpvplayer: dpvplayer.o dpvdecode.o
+	gcc -o $@ $^ $(LDFLAGS) -lSDL -lSDLmain -lpthread
+
+dpvsimpleplayer: dpvsimpleplayer.o dpvsimpledecode.o
 	gcc -o $@ $^ $(LDFLAGS) -lSDL -lSDLmain -lpthread
 
 

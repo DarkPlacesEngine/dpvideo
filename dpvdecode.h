@@ -49,16 +49,6 @@ unsigned int dpvdecode_getsoundrate(void *stream);
 // returns the framerate of the stream
 double dpvdecode_getframerate(void *stream);
 
-// returns a recommended sound buffer length (in samples)
-// for decoding a single frame of this stream
-unsigned int dpvdecode_getneededsoundbufferlength(void *stream);
-
-// decodes a frame, both video and audio, to the supplied buffers
-// can produce many different possible errors
-// (such as too little space in supplied sound buffer)
-// (note: sound is 16bit stereo native-endian, left channel first)
-//int dpvdecode_frame(void *stream, int framenum, void *imagedata, unsigned int Rmask, unsigned int Gmask, unsigned int Bmask, unsigned int bytesperpixel, int imagebytesperrow, short *sounddata, unsigned int soundbufferlength, unsigned int *soundlength);
-
 // decodes a video frame to the supplied output pixels
 int dpvdecode_video(void *stream, int framenum, void *imagedata, unsigned int Rmask, unsigned int Gmask, unsigned int Bmask, unsigned int bytesperpixel, int imagebytesperrow);
 // reads some sound
