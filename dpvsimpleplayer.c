@@ -24,9 +24,9 @@ void audiodequeue(audiocallbackinfo_t *info, short *samples, unsigned int length
 	if (l > info->buffercount)
 		l = info->buffercount;
 	b1 = (info->bufferstart) % MAXSOUNDBUFFER;
-	b2 = (info->bufferstart + l) % MAXSOUNDBUFFER;
-	if (b2 < b1)
+	if (b1 + l > MAXSOUNDBUFFER)
 	{
+		b2 = (b1 + l) % MAXSOUNDBUFFER;
 		memcpy(samples, info->buffer + b1 * 2, (MAXSOUNDBUFFER - b1) * sizeof(short[2]));
 		memcpy(samples + (MAXSOUNDBUFFER - b1) * 2, info->buffer, b2 * sizeof(short[2]));
 		//printf("audiodequeue: buffer wrap %i %i\n", (MAXSOUNDBUFFER - b1), b2);
@@ -52,9 +52,9 @@ void audioenqueue(audiocallbackinfo_t *info, short *samples, unsigned int length
 	if (info->buffercount + length > MAXSOUNDBUFFER)
 		return;
 	b2 = (info->bufferstart + info->buffercount) % MAXSOUNDBUFFER;
-	b3 = (info->bufferstart + info->buffercount + length) % MAXSOUNDBUFFER;
-	if (b3 < b2)
+	if (b2 + length > MAXSOUNDBUFFER)
 	{
+		b3 = (b2 + length) % MAXSOUNDBUFFER;
 		memcpy(info->buffer + b2 * 2, samples, (MAXSOUNDBUFFER - b2) * sizeof(short[2]));
 		memcpy(info->buffer, samples + (MAXSOUNDBUFFER - b2) * 2, b3 * sizeof(short[2]));
 	}
