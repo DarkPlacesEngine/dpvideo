@@ -10,7 +10,7 @@ PROFILEOPTION=
 
 #normal compile
 OPTIMIZATIONS= -O6 -fexpensive-optimizations
-CFLAGS= -MD -Wall -Werror $(OPTIMIZATIONS) $(PROFILEOPTION)
+CFLAGS= -I/usr/include/SDL -MD -Wall -Werror $(OPTIMIZATIONS) $(PROFILEOPTION)
 #debug compile
 #OPTIMIZATIONS=
 #CFLAGS= -MD -Wall -Werror -ggdb $(OPTIMIZATIONS) $(PROFILEOPTION)

@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "dpvdecode.h"
-#include "SDL/SDL.h"
-#include "SDL/SDL_main.h"
+#include "SDL.h"
+#include "SDL_main.h"
 
 #if WIN32
 #include <windows.h>
