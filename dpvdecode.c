@@ -42,17 +42,11 @@ typedef struct dpvdecodestream_s
 
 	int error;
 
-	// table of sound delta values
-	//int soundtable[64];
-
 	double info_framerate;
-	//unsigned int info_samplespersecond;
-	//unsigned int info_samplesperframe;
 	unsigned int info_frames;
 
 	unsigned int info_imagewidth;
 	unsigned int info_imageheight;
-//	unsigned int info_imageblocksize;
 	unsigned int info_imagebpp;
 	unsigned int info_imageRloss;
 	unsigned int info_imageRmask;
@@ -64,28 +58,14 @@ typedef struct dpvdecodestream_s
 	unsigned int info_imageBmask;
 	unsigned int info_imageBshift;
 	unsigned int info_imagesize;
-	//unsigned int info_neededsoundbufferlength;
 
 	// current video frame (needed because of delta compression)
 	int videoframenum;
 	// current video frame data (needed because of delta compression)
 	unsigned int *videopixels;
 
-	//hzhuffmanreadtree_t *audiohuffmantree;
-
 	// wav file the sound is being read from
 	wavefile_t *wavefile;
-
-	/*
-	// how much sound data the buffer can hold (will be reallocated if too small)
-	unsigned int soundbuffermax;
-	// how full the sound buffer should be kept
-	unsigned int soundbufferpreferred;
-	// how full the sound buffer currently is
-	unsigned int soundlength;
-	// the sound buffer itself
-	short *sounddata;
-	*/
 }
 dpvdecodestream_t;
 
@@ -156,196 +136,7 @@ static int dpvdecode_realseektoframe(dpvdecodestream_t *s, int framenum)
 	return dpvdecode_seektoposition(s, seekentry->position);
 }
 
-/*
-static int dpvdecode_decompressaudio(dpvdecodestream_t *s, short *sounddata, int framesoundlength)
-{
-	int mono, left, cleft, cright;
-	short *out, *end;
-	if (s->error)
-		return s->error;
-	if (hz_huffman_read_readtree(s->framedatablocks, s->audiohuffmantree))
-	{
-		s->error = DPVDECODEERROR_READERROR;
-		return s->error;
-	}
-	out = sounddata;
-	end = out + framesoundlength * 2;
-	mono = 0;
-	left = 0;
-	while(out < end)
-	{
-		mono += s->soundtable[hz_huffman_read_readsymbol(s->framedatablocks, s->audiohuffmantree)];
-		left += s->soundtable[hz_huffman_read_readsymbol(s->framedatablocks, s->audiohuffmantree)];
-		cright = mono - left;
-		cleft = mono + left;
-		if (cleft < -32768 || cleft > 32767 || cright < -32768 || cright > 32767)
-		{
-			s->error = DPVDECODEERROR_READERROR;
-			return s->error;
-		}
-		*out++ = cleft;
-		*out++ = cright;
-	}
-	return s->error;
-}
-*/
-
-/*
-static int dpvdecode_decompressimage(dpvdecodestream_t *s, void *imagedata, int imagebytesperrow)
-{
-	int i, a, b, colors, g, x1, y1, bw, bh, width, height, palettebits, imagepixelsperrow;
-	unsigned int Rloss, Rmask, Rshift, Gloss, Gmask, Gshift, Bloss, Bmask, Bshift;
-//	g = s->info_imageblocksize;
-	g = BLOCKSIZE;
-	width = s->info_imagewidth;
-	height = s->info_imageheight;
-	Rloss = s->info_imageRloss;
-	Rmask = s->info_imageRmask;
-	Rshift = s->info_imageRshift;
-	Gloss = s->info_imageGloss;
-	Gmask = s->info_imageGmask;
-	Gshift = s->info_imageGshift;
-	Bloss = s->info_imageBloss;
-	Bmask = s->info_imageBmask;
-	Bshift = s->info_imageBshift;
-	if (s->info_imagebpp == 4)
-	{
-		unsigned int palette[256], *outpixels, *outrow, *out;
-		imagepixelsperrow = imagebytesperrow >> 2;
-		outpixels = imagedata;
-		for (y1 = 0;y1 < height;y1 += g)
-		{
-			outrow = outpixels + y1 * imagepixelsperrow;
-			bh = g;
-			if (y1 + bh > height)
-				bh = height - y1;
-			for (x1 = 0;x1 < width;x1 += g)
-			{
-				out = outrow + x1;
-				bw = g;
-				if (x1 + bw > width)
-					bw = width - x1;
-				palettebits = hz_bitstream_read_bits(s->framedatablocks, 3);
-				colors = 1 << palettebits;
-				for (i = 0;i < colors;i++)
-				{
-					a = hz_bitstream_read_bits(s->framedatablocks, 16);
-					palette[i] = (((a >> Rloss) & Rmask) << Rshift) | (((a >> Gloss) & Gmask) << Gshift) | (((a >> Bloss) & Bmask) << Bshift);
-				}
-				if (palettebits)
-				{
-					for (b = 0;b < bh;b++, out += imagepixelsperrow)
-						for (a = 0;a < bw;a++)
-							out[a] = palette[hz_bitstream_read_bits(s->framedatablocks, palettebits)];
-				}
-				else
-				{
-					for (b = 0;b < bh;b++, out += imagepixelsperrow)
-						for (a = 0;a < bw;a++)
-							out[a] = palette[0];
-				}
-			}
-		}
-	}
-	else
-	{
-		// 2 bytes per pixel
-		unsigned short palette[256], *outpixels, *outrow, *out;
-		imagepixelsperrow = imagebytesperrow >> 1;
-		outpixels = imagedata;
-		for (y1 = 0;y1 < height;y1 += g)
-		{
-			outrow = outpixels + y1 * imagepixelsperrow;
-			bh = g;
-			if (y1 + bh > height)
-				bh = height - y1;
-			for (x1 = 0;x1 < width;x1 += g)
-			{
-				out = outrow + x1;
-				bw = g;
-				if (x1 + bw > width)
-					bw = width - x1;
-				palettebits = hz_bitstream_read_bits(s->framedatablocks, 3);
-				colors = 1 << palettebits;
-				for (i = 0;i < colors;i++)
-				{
-					a = hz_bitstream_read_bits(s->framedatablocks, 16);
-					palette[i] = (((a >> Rloss) & Rmask) << Rshift) | (((a >> Gloss) & Gmask) << Gshift) | (((a >> Bloss) & Bmask) << Bshift);
-				}
-				if (palettebits)
-				{
-					for (b = 0;b < bh;b++, out += imagepixelsperrow)
-						for (a = 0;a < bw;a++)
-							out[a] = palette[hz_bitstream_read_bits(s->framedatablocks, palettebits)];
-				}
-				else
-				{
-					for (b = 0;b < bh;b++, out += imagepixelsperrow)
-						for (a = 0;a < bw;a++)
-							out[a] = palette[0];
-				}
-			}
-		}
-	}
-	return s->error;
-}
-*/
-
-/*
-// decompress a frame at current position in bitstream
-static int dpvdecode_decodevideoframe(dpvdecodestream_t *s, int newframenum, void *imagedata, int imagebytesperrow)
-{
-	unsigned int framedatasize, framesoundlength;
-	char t[4];
-	if (dpvdecode_realseektoframe(s, newframenum))
-		return s->error;
-
-	s->error = DPVDECODEERROR_NONE;
-	hz_bitstream_read_blocks_read(s->framedatablocks, s->bitstream, 8);
-	hz_bitstream_read_bytes(s->framedatablocks, t, 4);
-	if (t[0] != 'D' || t[1] != 'P' || t[2] != 'V' || t[3] != '0')
-	{
-		s->error = DPVDECODEERROR_READERROR;
-		return s->error;
-	}
-	framedatasize = hz_bitstream_read_int(s->framedatablocks);
-	hz_bitstream_read_blocks_read(s->framedatablocks, s->bitstream, framedatasize);
-	return dpvdecode_decompressimage(s, imagedata, imagebytesperrow);
-}
-*/
-
-/*
-static int dpvdecode_decodeaudioframe(dpvdecodestream_t *s, int newframenum, void *imagedata, int imagebytesperrow, void *sounddata, unsigned int soundbufferlength)
-{
-	unsigned int framedatasize, framesoundlength;
-	char t[4];
-	if (dpvdecode_realseektoframe(s, newframenum))
-		return s->error;
-	s->error = DPVDECODEERROR_NONE;
-	hz_bitstream_read_blocks_read(s->framedatablocks, s->bitstream, 8);
-	hz_bitstream_read_bytes(s->framedatablocks, t, 4);
-	if (t[0] != 'S' || t[1] != 'N' || t[2] != 'D' || t[3] != '0')
-	{
-		s->error = DPVDECODEERROR_READERROR;
-		return s->error;
-	}
-	framedatasize = hz_bitstream_read_int(s->framedatablocks);
-	hz_bitstream_read_blocks_read(s->framedatablocks, s->bitstream, framedatasize);
-	framesoundlength = hz_bitstream_read_int(s->framedatablocks);
-	if (framesoundlength > soundbufferlength)
-	{
-		s->error = DPVDECODEERROR_SOUNDBUFFERTOOSMALL;
-		return s->error;
-	}
-
-	if (dpvdecode_decompressimage(s, imagedata, imagebytesperrow))
-		return s->error;
-
-	return dpvdecode_decompressaudio(s, sounddata, framesoundlength);
-}
-*/
-
-int dpvdecode_setpixelformat(dpvdecodestream_t *s, unsigned int Rmask, unsigned int Gmask, unsigned int Bmask, unsigned int bytesperpixel)
+static int dpvdecode_setpixelformat(dpvdecodestream_t *s, unsigned int Rmask, unsigned int Gmask, unsigned int Bmask, unsigned int bytesperpixel)
 {
 	int Rshift, Rbits, Gshift, Gbits, Bshift, Bbits;
 	if (!Rmask)
@@ -451,18 +242,11 @@ static int dpvdecode_buildframeindex(dpvdecodestream_t *s)
 			length = hz_bitstream_read_int(s->framedatablocks);
 			if (length < s->info_imagewidth * s->info_imageheight * 4)
 			{
-				//l = hz_bitstream_read_int(s->framedatablocks);
-				//// validate samples count
-				//if (abs(l - s->info_samplesperframe) < 4)
-				//{
-					// probably a valid frame
-					dpvdecode_addframetoseektable(s, 0, position);
-					// seek to next frame using length from header
-					if (hz_bitstream_read_seek(s->bitstream, position + length + 8))
-						break;
-				//}
-				//else
-				//	break;
+				// probably a valid frame
+				dpvdecode_addframetoseektable(s, 0, position);
+				// seek to next frame using length from header
+				if (hz_bitstream_read_seek(s->bitstream, position + length + 8))
+					break;
 			}
 			else
 				break;
@@ -486,23 +270,6 @@ static void dpvdecode_freeframeindex(dpvdecodestream_t *s)
 		seektable = n;
 	}
 }
-
-/*
-static void dpvdecode_buildsoundtable(dpvdecodestream_t *s)
-{
-	int i, k;
-	double f;
-	for (i = 0;i < 64;i++)
-	{
-		k = i;
-		if (k >= 32)
-			k = 32 - (k - 32);
-		f = fabs(k * (1.0 / 32.0));
-		s->soundtable[i] = (int) (pow(f, 2) * 32768.0 * (i >= 32 ? -1.0 : 1.0));
-	}
-}
-*/
-
 
 // opening and closing streams
 
@@ -558,54 +325,42 @@ void *dpvdecode_open(char *filename, char **errorstring)
 						hz_bitstream_read_blocks_read(s->framedatablocks, s->bitstream, 12);
 						s->info_imagewidth = hz_bitstream_read_short(s->framedatablocks);
 						s->info_imageheight = hz_bitstream_read_short(s->framedatablocks);
-						//s->info_imageblocksize = hz_bitstream_read_short(s->framedatablocks);
 						s->info_framerate = (double) hz_bitstream_read_int(s->framedatablocks) * (1.0 / 65536.0);
-						//s->info_samplespersecond = hz_bitstream_read_int(s->framedatablocks);
-						//s->info_samplesperframe = s->info_samplespersecond / s->info_framerate;
-						//s->info_neededsoundbufferlength = s->info_samplesperframe + 4;
 
-						if (s->info_framerate > 0.0/* && s->info_imageblocksize >= 1 && !(s->info_imageblocksize & (s->info_imageblocksize - 1))*/)
+						if (s->info_framerate > 0.0)
 						{
-							//s->audiohuffmantree = hz_huffman_read_newtree(64);
-							//if (s->audiohuffmantree != NULL)
-							//{
-							//	dpvdecode_buildsoundtable(s);
-								s->videopixels = malloc(s->info_imagewidth * s->info_imageheight * sizeof(*s->videopixels));
-								if (s->videopixels != NULL)
+							s->videopixels = malloc(s->info_imagewidth * s->info_imageheight * sizeof(*s->videopixels));
+							if (s->videopixels != NULL)
+							{
+								if (!dpvdecode_buildframeindex(s))
 								{
-									if (!dpvdecode_buildframeindex(s))
+									wavename = malloc(strlen(filename) + 10);
+									if (wavename)
 									{
-										wavename = malloc(strlen(filename) + 10);
-										if (wavename)
-										{
-											StripExtension(filename, wavename);
-											strcat(wavename, ".wav");
-											s->wavefile = waveopen(wavename, NULL);
-											free(wavename);
-										}
-										if (!dpvdecode_realseektoframe(s, 0))
-										{
-											// all is well...
-											s->videoframenum = -10000;
-											return s;
-										}
-										else if (errorstring != NULL)
-											*errorstring = "error seeking to first frame";
-										// error occurred, close down
-										if (s->wavefile)
-											waveclose(s->wavefile);
-										dpvdecode_freeframeindex(s);
+										StripExtension(filename, wavename);
+										strcat(wavename, ".wav");
+										s->wavefile = waveopen(wavename, NULL);
+										free(wavename);
+									}
+									if (!dpvdecode_realseektoframe(s, 0))
+									{
+										// all is well...
+										s->videoframenum = -10000;
+										return s;
 									}
 									else if (errorstring != NULL)
-										*errorstring = "error reading frames to build index table";
-									free(s->videopixels);
+										*errorstring = "error seeking to first frame";
+									// error occurred, close down
+									if (s->wavefile)
+										waveclose(s->wavefile);
+									dpvdecode_freeframeindex(s);
 								}
 								else if (errorstring != NULL)
-									*errorstring = "unable to allocate video image buffer";
-							//	hz_huffman_read_freetree(s->audiohuffmantree);
-							//}
-							//else if (errorstring != NULL)
-							//	*errorstring = "unable to allocate huffman tree for decoding audio";
+									*errorstring = "error reading frames to build index table";
+								free(s->videopixels);
+							}
+							else if (errorstring != NULL)
+								*errorstring = "unable to allocate video image buffer";
 						}
 						else if (errorstring != NULL)
 							*errorstring = "error in video info chunk";
@@ -637,7 +392,6 @@ void dpvdecode_close(void *stream)
 	if (s == NULL)
 		return;
 	dpvdecode_freeframeindex(s);
-	//hz_huffman_read_freetree(s->audiohuffmantree);
 	if (s->videopixels)
 		free(s->videopixels);
 	if (s->wavefile)
@@ -933,12 +687,5 @@ int dpvdecode_audio(void *stream, int firstsample, short *soundbuffer, int reque
 	startsamples += samples;
 	if (startsamples < requestedlength)
 		memset(soundbuffer + startsamples * 2, 0, (requestedlength - startsamples) * sizeof(short[2]));
-
-	//printf("read %i - %i (%i : %i) ", sample1, sample2, sample2 - sample1, samples);
-	sample2 = 0;
-	for (sample1 = 0;sample1 < requestedlength * 2;sample1++)
-		sample2 += soundbuffer[sample1];
-	//printf("avg: %i\n", sample2 / (requestedlength * 2));
-
 	return s->error;
 }
