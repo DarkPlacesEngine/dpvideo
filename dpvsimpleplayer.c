@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <string.h>
 #include "dpvsimpledecode.h"
-#include "SDL.h"
-#include "SDL_main.h"
+#include "SDL/SDL.h"
+#include "SDL/SDL_main.h"
 
 #define MAXSOUNDBUFFER 32768
 typedef struct audiocallbackinfo_s
