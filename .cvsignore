@@ -1,4 +1,8 @@
 *.d
+*.o
+*.plg
+*.ncb
+*.opt
 dpvplayer
 dpvsimpleplayer
 dpvdecoder
