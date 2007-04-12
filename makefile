@@ -9,11 +9,11 @@ PROFILEOPTION=
 #this is used to ensure that all released versions are free of warnings.
 
 #normal compile
-OPTIMIZATIONS= -O6 -fexpensive-optimizations -fno-strict-aliasing
-CFLAGS= -I/usr/include/SDL -MD -Wall -Werror $(OPTIMIZATIONS) $(PROFILEOPTION)
+OPTIMIZATIONS= -O2 -fexpensive-optimizations
+CFLAGS= `sdl-config --cflags` -MD -Wall $(OPTIMIZATIONS) $(PROFILEOPTION)
 #debug compile
 #OPTIMIZATIONS=
-#CFLAGS= -I/usr/include/SDL -MD -Wall -Werror -ggdb $(OPTIMIZATIONS) $(PROFILEOPTION)
+#CFLAGS= `sdl-config --cflags` -MD -Wall -ggdb $(OPTIMIZATIONS) $(PROFILEOPTION)
 
 LDFLAGS= -lm $(PROFILEOPTION)
 
