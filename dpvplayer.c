@@ -242,16 +242,16 @@ static void dpvplayer(char *filename, void *stream, int fullscreen, int opengl, 
 	void *imagedata;
 
 	int soundfrequency;
-	audiocallbackinfo_t *audiocallbackinfo;
-	SDL_AudioSpec *desiredaudiospec;
+	audiocallbackinfo_t *audiocallbackinfo = NULL;
+	SDL_AudioSpec *desiredaudiospec = NULL;
 	double soundmixahead;
 	double soundprefetch;
 	double soundlatency;
 	int soundmixaheadsamples;
 	int soundprefetchsamples;
 	int soundlatencysamples;
-	int audioworks;
-	short *soundbuffer;
+	int audioworks = 0;
+	short *soundbuffer = NULL;
 	int soundbufferlength;
 	int firstsample;
 	int audiopaused;
@@ -497,40 +497,42 @@ static void dpvplayer(char *filename, void *stream, int fullscreen, int opengl, 
 
 	soundfrequency = dpvdecode_getsoundrate(stream);
 
-	audiocallbackinfo = malloc(sizeof(audiocallbackinfo_t));
-	memset(audiocallbackinfo, 0, sizeof(audiocallbackinfo_t));
-
-	desiredaudiospec = malloc(sizeof(SDL_AudioSpec));
-	memset(desiredaudiospec, 0, sizeof(SDL_AudioSpec));
-
-	desiredaudiospec->freq = soundfrequency ? soundfrequency : 11025;
-	desiredaudiospec->format = AUDIO_S16SYS;
-	desiredaudiospec->channels = 2;
-	desiredaudiospec->samples = 1024;//16384;//1024;//16384;//2048;
-	desiredaudiospec->callback = audiocallback;
-	desiredaudiospec->userdata = audiocallbackinfo;
-
-	// we want exactly what we asked for,
-	// let SDL emulate it if not available...
-	if (SDL_OpenAudio(desiredaudiospec, NULL) < 0)
+	if (soundfrequency)
 	{
-		fprintf(stderr, "Couldn't open audio: %s\n", SDL_GetError());
-		exit(-1);
+		audiocallbackinfo = malloc(sizeof(audiocallbackinfo_t));
+		memset(audiocallbackinfo, 0, sizeof(audiocallbackinfo_t));
+
+		desiredaudiospec = malloc(sizeof(SDL_AudioSpec));
+		memset(desiredaudiospec, 0, sizeof(SDL_AudioSpec));
+
+		desiredaudiospec->freq = soundfrequency;
+		desiredaudiospec->format = AUDIO_S16SYS;
+		desiredaudiospec->channels = 2;
+		desiredaudiospec->samples = 1024;//16384;//1024;//16384;//2048;
+		desiredaudiospec->callback = audiocallback;
+		desiredaudiospec->userdata = audiocallbackinfo;
+
+		// we want exactly what we asked for,
+		// let SDL emulate it if not available...
+		if (SDL_OpenAudio(desiredaudiospec, NULL) < 0)
+		{
+			fprintf(stderr, "Couldn't open audio: %s\n", SDL_GetError());
+			exit(-1);
+		}
+		audioworks = 1;
+		soundmixahead = desiredaudiospec->samples / desiredaudiospec->freq;
+		soundprefetch = soundmixahead;
+		soundlatency = soundmixahead * 6;
+		soundmixaheadsamples = desiredaudiospec->samples;
+		soundprefetchsamples = soundmixaheadsamples;
+		soundlatencysamples = soundmixaheadsamples * 6;
+
+		audiocallbackinfo->bufferlength = MAXSOUNDBUFFER;
+		audiocallbackinfo->bufferpreferred = soundprefetchsamples;
+
+		soundbufferlength = audiocallbackinfo->bufferlength;
+		soundbuffer = malloc(soundbufferlength * sizeof(short[2]));
 	}
-	audioworks = 1;
-
-	soundmixahead = desiredaudiospec->samples / desiredaudiospec->freq;
-	soundprefetch = soundmixahead;
-	soundlatency = soundmixahead * 6;
-	soundmixaheadsamples = desiredaudiospec->samples;
-	soundprefetchsamples = soundmixaheadsamples;
-	soundlatencysamples = soundmixaheadsamples * 6;
-
-	audiocallbackinfo->bufferlength = MAXSOUNDBUFFER;
-	audiocallbackinfo->bufferpreferred = soundprefetchsamples;
-
-	soundbufferlength = audiocallbackinfo->bufferlength;
-	soundbuffer = malloc(soundbufferlength * sizeof(short[2]));
 
 	printf("video stream is %dx%dx%gfps with %dhz audio, length %g seconds (%d frames)\n", dpvdecode_getwidth(stream), dpvdecode_getheight(stream), dpvdecode_getframerate(stream), dpvdecode_getsoundrate(stream), dpvdecode_gettotaltime(stream), dpvdecode_gettotalframes(stream));
 	playedtime = 0;
@@ -744,12 +746,15 @@ static void dpvplayer(char *filename, void *stream, int fullscreen, int opengl, 
 		}
 		if (reset)
 		{
-			firstsample = (int) ((streamtime + soundlatency) * soundfrequency);
-			if (audiocallbackinfo->buffercount)
+			if (audioworks)
 			{
-				SDL_LockAudio();
-				audioqueueclear(audiocallbackinfo);
-				SDL_UnlockAudio();
+				firstsample = (int) ((streamtime + soundlatency) * soundfrequency);
+				if (audiocallbackinfo->buffercount)
+				{
+					SDL_LockAudio();
+					audioqueueclear(audiocallbackinfo);
+					SDL_UnlockAudio();
+				}
 			}
 			reset = 0;
 		}
