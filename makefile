@@ -1,45 +1,49 @@
 
-#use this line for profiling
-#PROFILEOPTION=-pg -g
-#use this lines for no profiling
-PROFILEOPTION=
-
-#note:
-#the -Werror can be removed to compile even if there are warnings,
-#this is used to ensure that all released versions are free of warnings.
-
 #normal compile
-OPTIMIZATIONS= -O2 -fexpensive-optimizations
-CFLAGS= `sdl-config --cflags` -MD -Wall $(OPTIMIZATIONS) $(PROFILEOPTION)
+FLAGS= -lm -Wall -O2 -fexpensive-optimizations $(PROFILEOPTION)
+#profile compile
+#FLAGS= -lm -Wall -O2 -fexpensive-optimizations -pg -g
 #debug compile
-#OPTIMIZATIONS=
-#CFLAGS= `sdl-config --cflags` -MD -Wall -ggdb $(OPTIMIZATIONS) $(PROFILEOPTION)
+#FLAGS= -lm -Wall -ggdb $(PROFILEOPTION)
 
-LDFLAGS= -lm $(PROFILEOPTION)
+all:
+ifdef windir
+	$(MAKE) mingw
+else
+	$(MAKE) dpvencoder dpvdecoder dpvplayer dpvsimpleplayer
+endif
 
-TARGETS= dpvencoder dpvdecoder dpvplayer dpvsimpleplayer
+mingw:
+	$(MAKE) dpvencoder.exe dpvdecoder.exe dpvplayer.exe dpvsimpleplayer.exe
 
-all: $(TARGETS)
+dpvencoder: dpvencoder.c dpvencode.c file.c tgafile.c
+	$(CC) -o $@ $^ $(FLAGS)
 
-.c.o:
-	gcc $(CFLAGS) -c $*.c
+dpvdecoder: dpvdecoder.c dpvdecode.c file.c tgafile.c
+	$(CC) -o $@ $^ $(FLAGS)
 
-dpvencoder: dpvencoder.o dpvencode.o file.o tgafile.o
-	gcc -o $@ $^ $(LDFLAGS)
+dpvplayer: dpvplayer.c dpvdecode.c
+	$(CC) -o $@ $^ `sdl-config --cflags` `sdl-config --libs` $(FLAGS)
 
-dpvdecoder: dpvdecoder.o dpvdecode.o file.o tgafile.o
-	gcc -o $@ $^ $(LDFLAGS)
+dpvsimpleplayer: dpvsimpleplayer.c dpvsimpledecode.c
+	$(CC) -o $@ $^ `sdl-config --cflags` `sdl-config --libs` $(FLAGS)
 
-dpvplayer: dpvplayer.o dpvdecode.o
-	gcc -o $@ $^ $(LDFLAGS) -lSDL -lSDLmain -lpthread
+dpvencoder.exe: dpvencoder.c dpvencode.c file.c tgafile.c
+	$(CC) -o $@ $^ $(FLAGS)
 
-dpvsimpleplayer: dpvsimpleplayer.o dpvsimpledecode.o
-	gcc -o $@ $^ $(LDFLAGS) -lSDL -lSDLmain -lpthread
+dpvdecoder.exe: dpvdecoder.c dpvdecode.c file.c tgafile.c
+	$(CC) -o $@ $^ $(FLAGS)
+
+dpvplayer.exe: dpvplayer.c dpvdecode.c
+	$(CC) -o $@ $^ `sdl-config --cflags` `sdl-config --libs` $(FLAGS)
+
+dpvsimpleplayer.exe: dpvsimpleplayer.c dpvsimpledecode.c
+	$(CC) -o $@ $^ `sdl-config --cflags` `sdl-config --libs` $(FLAGS)
 
 
 
 clean:
-	-rm -f $(TARGETS) *.exe *.o *.d
+	-rm -f dpvencoder dpvdecoder dpvplayer dpvsimpleplayer *.exe *.o *.d
 
 .PHONY: clean
 
