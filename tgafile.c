@@ -16,6 +16,7 @@ tgafile_t *loadtga(char *filename)
 	int columns, rows, row, column;
 	unsigned int datasize;
 	unsigned char *pixbuf, *pixels, *fin, *data, *enddata;
+	void *voiddata;
 	// the contents of the targa header
 	struct
 	{
@@ -27,8 +28,9 @@ tgafile_t *loadtga(char *filename)
 	}
 	targa;
 
-	if (readfile(filename, (void **)&data, &datasize) || datasize < 18)
+	if (readfile(filename, &voiddata, &datasize) || datasize < 18)
 		return NULL;
+	data = (unsigned char *)voiddata;
 
 	targa.id_length = data[0];
 	targa.colormap_type = data[1];

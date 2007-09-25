@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include "file.h"
 
-int readfile(char *filename, void **mem, int *size)
+int readfile(char *filename, void **mem, unsigned int *size)
 {
 	FILE *file;
 	char *filemem;
@@ -35,7 +35,7 @@ int readfile(char *filename, void **mem, int *size)
 	return 0;
 }
 
-int writefile(char *filename, void *mem, int size)
+int writefile(char *filename, void *mem, unsigned int size)
 {
 	FILE *file;
 	int writesize;

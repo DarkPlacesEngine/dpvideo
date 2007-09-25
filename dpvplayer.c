@@ -246,7 +246,7 @@ static void dpvplayer(char *filename, void *stream, int fullscreen, int opengl, 
 	SDL_AudioSpec *desiredaudiospec = NULL;
 	double soundmixahead;
 	double soundprefetch;
-	double soundlatency;
+	double soundlatency = 0;
 	int soundmixaheadsamples;
 	int soundprefetchsamples;
 	int soundlatencysamples;

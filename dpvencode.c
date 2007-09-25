@@ -195,7 +195,7 @@ static void dpvencode_sound(dpvencodestream_t *s, short *sound, unsigned int sou
 static void dpvencode_compressimage(dpvencodestream_t *s, unsigned char *pixels, double quality)
 {
 	int i, j, a, b, cr, cg, cb, x1, y1, width, height, bw, bh, palettebits, paletteuse[4096], best1, best2, best, bestscore, score, colors, rdist, gdist, bdist, threshold, deltablocks, deltablockthreshold;
-	int deltapixelerror, deltablockerror;
+	int deltapixelerror, deltablockerror = 0;
 	unsigned char palette[4096 * 4], *pix, *p;
 	double error, errorstart, errorblock, errorbiggest;
 	dpvencodeblockinfo_t *block;
