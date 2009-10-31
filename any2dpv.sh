@@ -1,13 +1,9 @@
 #!/bin/sh
 
-case "$#" in
-	3)
-		;;
-	*)
-		echo "Usage: $0 videofile.avi compressionfactor oggquality"
-		exit 1
-		;;
-esac
+if [ "$#" -lt 3 ]; then
+	echo "Usage: $0 videofile.avi compressionfactor oggquality"
+	exit 1
+fi
 
 set -ex
 
@@ -21,6 +17,9 @@ case "$1" in
 esac
 compression=$2
 oggquality=$3
+shift
+shift
+shift
 
 midentify()
 {
@@ -40,14 +39,14 @@ prevdir=`pwd`
 dir=`mktemp -d -t dpvencode.XXXXXX`
 cd "$dir"
 eval "`midentify "$video"`"
-mplayer -benchmark -vf scale -vo tga -nosound "$video"
-# make 0-based indexes from 1-based indexes
+mplayer -benchmark -vf scale -vo png:z=1 -nosound "$video" "$@"
 prev=
-for X in *.tga; do
-	mv "$X" `printf "video_%08d.tga" $((1${X%.tga} - 100000001))`
+for X in *.png; do
+	convert "$X" `printf "video_%08d.tga" $((1${X%.png} - 100000001))`
+		# work around mplayer bug creating invalid TGAs
 	prev=$X
 done
-mplayer -vc dummy -vo null -ao pcm "$video"
+mplayer -vc dummy -vo null -ao pcm "$video" "$@"
 dpvencoder video "$ID_VIDEO_FPS" "$compression"
 oggenc -q "$oggquality" -o "${video%.*}.ogg" "audiodump.wav"
 mv video.dpv "${video%.*}.dpv"

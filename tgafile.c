@@ -82,7 +82,7 @@ tgafile_t *loadtga(char *filename)
 		// Uncompressed, RGB images
 		for(row = rows - 1;row >= 0;row--)
 		{
-			pixbuf = pixels + row*columns*3;
+			pixbuf = pixels + ((targa.attributes & 0x20) ? rows-row-1 : row) *columns*3;
 			for(column = 0;column < columns;column++)
 			{
 				switch (targa.pixel_size)
@@ -115,7 +115,7 @@ tgafile_t *loadtga(char *filename)
 		unsigned char red = 0, green = 0, blue = 0, alphabyte = 0, packetHeader, packetSize, j;
 		for(row = rows - 1;row >= 0;row--)
 		{
-			pixbuf = pixels + row * columns * 3;
+			pixbuf = pixels + ((targa.attributes & 0x20) ? rows-row-1 : row) *columns*3;
 			for(column = 0;column < columns;)
 			{
 				if (fin >= enddata)
@@ -161,7 +161,7 @@ tgafile_t *loadtga(char *filename)
 								row--;
 							else
 								goto breakOut;
-							pixbuf = pixels + row * columns * 3;
+							pixbuf = pixels + ((targa.attributes & 0x20) ? rows-row-1 : row) *columns*3;
 						}
 					}
 				}
@@ -200,7 +200,7 @@ tgafile_t *loadtga(char *filename)
 								row--;
 							else
 								goto breakOut;
-							pixbuf = pixels + row * columns * 3;
+							pixbuf = pixels + ((targa.attributes & 0x20) ? rows-row-1 : row) *columns*3;
 						}
 					}
 				}
