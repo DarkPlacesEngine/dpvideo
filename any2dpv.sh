@@ -40,11 +40,8 @@ dir=`mktemp -d -t dpvencode.XXXXXX`
 cd "$dir"
 eval "`midentify "$video"`"
 mplayer -benchmark -vf scale -vo png:z=1 -nosound "$video" "$@"
-prev=
 for X in *.png; do
-	convert "$X" `printf "video_%08d.tga" $((1${X%.png} - 100000001))`
-		# work around mplayer bug creating invalid TGAs
-	prev=$X
+	pngtopnm "$X" | ppmtotga -rgb > `printf "video_%08d.tga" $((1${X%.png} - 100000001))`
 done
 mplayer -vc dummy -vo null -ao pcm "$video" "$@"
 dpvencoder video "$ID_VIDEO_FPS" "$compression"
