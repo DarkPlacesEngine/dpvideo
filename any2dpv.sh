@@ -42,6 +42,7 @@ eval "`midentify "$video"`"
 mplayer -benchmark -vf scale -vo png:z=1 -nosound "$video" "$@"
 for X in *.png; do
 	pngtopnm "$X" | ppmtotga -rgb > `printf "video_%08d.tga" $((1${X%.png} - 100000001))`
+	rm -f "$X"
 done
 mplayer -vc dummy -vo null -ao pcm "$video" "$@"
 dpvencoder video "$ID_VIDEO_FPS" "$compression"
