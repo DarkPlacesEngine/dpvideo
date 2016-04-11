@@ -1,4 +1,5 @@
 
+#include <limits.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -64,6 +65,12 @@ tgafile_t *loadtga(char *filename)
 
 	columns = targa.width;
 	rows = targa.height;
+
+	if (columns <= 0 || rows <= 0 || rows > (INT_MAX / 3) / columns) {
+		printf ("LoadTGA: %i by %i is an invalid image size\n", columns, rows);
+		free(data);
+		return NULL;
+	}
 
 	pixels = malloc(columns * rows * 3);
 	if (!pixels)
